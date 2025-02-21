@@ -10,9 +10,6 @@
 ;*********************
 .include "M328PDEF.inc"
 .cseg
-.dseg
-.def LEDS=R17
-.def DISPLAY=R18
 
 .org 0x0000
 	RJMP SETUP  ; Ir a la configuraci?n al inicio
@@ -28,12 +25,12 @@
 
 //Configurar MCU
 SETUP:
-
+	 CLI									//Deshabilitar interrupciones globales
 	// Configurar Prescaler "Principal"
 	LDI		R16, (1 << CLKPCE)
-	STS		CLKPR, R16 // Habilitar cambio de PRESCALER
+	STS		CLKPR, R16						// Habilitar cambio de PRESCALER
 	LDI		R16, 0b00000100
-	STS		CLKPR, R16 // Configurar Prescaler a 16 F_cpu = 1MHz
+	STS		CLKPR, R16						// Configurar Prescaler a 16 F_cpu = 1MHz
 
 	// Inicializar timer0
 	CALL INIT_TMR0
@@ -41,7 +38,7 @@ SETUP:
 	// Configurar PB como salida para usarlo como del contador 
 	LDI		R16, 0xFF
 	OUT		DDRB, R16						// Puerto B como salida
-	LDI		R16, 0x00
+	LDI		R16, 0x02
 	OUT		PORTB, R16						//El puerto B conduce cero logico.
 
 	//Configurar PD como salida para usarlo para el display
@@ -55,8 +52,11 @@ SETUP:
 	STS		UCSR0B, R16
 
 	//Habilitar interrupciones del Timer
-	LDI		R16,	(TOIE1<<1)				//Encender el enable de las interrupciones
+	LDI		R16,	(1<<TOIE0)				//Encender el enable de las interrupciones
 	STS		TIMSK0, R16						//Cargarle el nuevo valor a mascara
+	
+	//Valor inicial de R17
+	LDI		R17, 0x00
 
 	SEI										//Habilitar las interrupciones globales.
 
@@ -64,7 +64,7 @@ SETUP:
 
 
 MAIN:
-	RJMP	MAIN
+	RJMP	MAIN							//Bucle
 
 
 //configurar el timer0 en 64 bits y cargarle el valor inicial al TCNT0
@@ -77,6 +77,6 @@ INIT_TMR0:
 
 //Rutina de interrupción
 ISR_TIMER0:
-	INC		LEDS
-	OUT		PORTB, LEDS
+	INC		R17
+	OUT		PORTB, R17
 	RETI
