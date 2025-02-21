@@ -22,8 +22,8 @@
 	OUT		 SPL, R16
 	LDI		 R16, HIGH(RAMEND)
 	OUT		 SPH, R16
-	// Configuracion MCU
 
+// Configuracion MCU
 SETUP:
 	// Configurar PB como salida para usarlo como del contador 
 	LDI		R16, 0xFF
