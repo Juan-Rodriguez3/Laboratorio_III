@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Pre-laboratorio III\Pre-laboratorio III\main.asm Fri Feb 21 01:27:55 2025
+AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Pre-laboratorio III\Pre-laboratorio III\main.asm Fri Feb 21 01:43:15 2025
 
 
 EQU  SIGNATURE_000 0000001e
@@ -696,10 +696,10 @@ EQU  TWIaddr      00000030
 EQU  SPMRaddr     00000032
 EQU  INT_VECTORS_SIZE 00000034
 CSEG SETUP        0000000d
-CSEG ISR_PCINT1   0000002d
-CSEG MAIN         00000020
-CSEG SUMA         00000021
-CSEG OVERF        00000029
-CSEG FIN          00000032
-CSEG RESTA        00000025
-CSEG UNDERF       0000002b
+CSEG ISR_PCINT1   0000002c
+CSEG MAIN         0000001f
+CSEG SUMA         00000020
+CSEG OVERF        00000028
+CSEG FIN          00000031
+CSEG RESTA        00000024
+CSEG UNDERF       0000002a

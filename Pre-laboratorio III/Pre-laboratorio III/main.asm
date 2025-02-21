@@ -1,4 +1,4 @@
-	; Universidad del Valle de Guatemala
+; Universidad del Valle de Guatemala
 ; IE2025: Programacion de Microcontroladores
 ;
 ; Author: Juan Rodriguez
@@ -41,13 +41,11 @@ SETUP:
 
 	LDI		R16, (PCIE1<<1)					//Encender PCIE1 en PCICR
 	STS		PCICR, R16						//Configurar interrupciones puerto C
-	LDI		R16, (PCINT8<<1) | (PCINT9<<1)	//Configurar PC0 y PC1 en 
+	LDI		R16, 0x03						//Configurar PC0 y PC1 en 
 	STS		PCMSK1, R16	
 
 	NOP
 	NOP
-
-	IN		R17, PINC						//Lectura de los botones
 	LDI		R18, 0x00						//Salida de los leds
 
 	SEI										//Habilitar interrupciones globales
@@ -82,7 +80,7 @@ ISR_PCINT1:
 	IN		R17, PINC						//Leer el estado de los botones
 	SBRS	R17, 0							//Salta si el bit 0 esta en set
 	RJMP	SUMA
-	SBRS	R17, 1							//Salta si el bit 1 esta en reset
+	SBRS	R17, 1							//Salta si el bit 1 esta en set
 	RJMP	RESTA
 FIN:
 	OUT		PORTB,	R18						//Actualiza la salida,
