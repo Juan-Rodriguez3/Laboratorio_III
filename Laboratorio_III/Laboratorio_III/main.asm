@@ -97,6 +97,7 @@ ISR_TIMER0:
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	INCREMENTAR
+	LDI		CONTADOR, 0x00
 FIN:
 	RETI
 
@@ -106,7 +107,7 @@ INCREMENTAR:
 	BREQ	OVERF
 	ADIW	Z,	1	
 	LPM		DISPLAY, Z
-	OUT		PORTD, LEDS
+	OUT		PORTD, DISPLAY
 	RJMP	FIN
 
 OVERF:
@@ -114,4 +115,5 @@ OVERF:
 	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
 	OUT		PORTD, DISPLAY
+	RJMP	FIN
 		
