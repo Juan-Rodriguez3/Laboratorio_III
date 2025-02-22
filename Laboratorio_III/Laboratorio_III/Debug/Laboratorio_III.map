@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm Fri Feb 21 17:56:01 2025
+AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm Fri Feb 21 18:03:31 2025
 
 
 EQU  SIGNATURE_000 0000001e
@@ -705,5 +705,5 @@ CSEG ISR_TIMER0   0000004a
 CSEG INIT_TMR0    00000045
 CSEG MAIN         00000044
 CSEG INCREMENTAR  0000004f
-CSEG FIN          0000004e
+CSEG FIN          0000004d
 CSEG OVERF        00000056

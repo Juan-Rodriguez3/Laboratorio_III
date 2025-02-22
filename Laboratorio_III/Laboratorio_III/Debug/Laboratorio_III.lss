@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm Fri Feb 21 17:56:01 2025
+AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm Fri Feb 21 18:03:31 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm(11): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1135,25 +1135,24 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\m
 00004a 9533                      	INC		CONTADOR
 00004b 3634                      	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 00004c f011                      	BREQ	INCREMENTAR
-00004d e030                      	LDI		CONTADOR, 0x00
                                  FIN:
+00004d b92b                      	OUT		PORTD, DISPLAY
 00004e 9518                      	RETI
                                  
-                                 INCREMENTAR:	
-00004f 9543                      	INC		COUNT_DISP							//Incrementar
-000050 304a                      	CPI		COUNT_DISP, 0x0A					//Comparar para overflow
-000051 f021                      	BREQ	OVERF
-000052 9631                      	ADIW	Z,	1	
-000053 9124                      	LPM		DISPLAY, Z
-000054 b92b                      	OUT		PORTD, DISPLAY
-000055 cff8                      	RJMP	FIN
+                                 INCREMENTAR:
+00004f e030                      	LDI		CONTADOR, 0x00	
+000050 9543                      	INC		COUNT_DISP							//Incrementar
+000051 304a                      	CPI		COUNT_DISP, 0x0A					//Comparar para overflow
+000052 f019                      	BREQ	OVERF
+000053 9631                      	ADIW	Z,	1	
+000054 9124                      	LPM		DISPLAY, Z
+000055 cff7                      	RJMP	FIN
                                  
                                  OVERF:
 000056 e0f0                      	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
 000057 e0e2                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 000058 9124                      	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
-000059 b92b                      	OUT		PORTD, DISPLAY
-00005a cff3                      	RJMP	FIN
+000059 cff3                      	RJMP	FIN
 
 
 RESOURCE USE INFORMATION
@@ -1173,7 +1172,7 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   4 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  24 r17:   1 r18:   7 r19:   4 r20:   2 
+r13:   0 r14:   0 r15:   0 r16:  24 r17:   1 r18:   6 r19:   4 r20:   2 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   2 r31:   2 
 Registers used: 8 out of 35 (22.9%)
@@ -1191,7 +1190,7 @@ cpi   :   2 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0
 fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   2 jmp   :   0 
 ld    :   0 ldd   :   0 ldi   :  20 lds   :   0 lpm   :   6 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  11 pop   :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  10 pop   :   0 
 push  :   0 rcall :   0 ret   :   1 reti  :   1 rjmp  :   5 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
@@ -1203,7 +1202,7 @@ Instructions used: 14 out of 113 (12.4%)
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0000b6    120     16    136   32768   0.4%
+[.cseg] 0x000000 0x0000b4    118     16    134   32768   0.4%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

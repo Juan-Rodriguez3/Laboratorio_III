@@ -14,6 +14,7 @@
 .def	DISPLAY=R18
 .def	CONTADOR=R19
 .def	COUNT_DISP=R20
+.def	BOTON=R21
 .org 0x0000
 	RJMP SETUP  ; Ir a la configuraciOn al inicio
 
@@ -22,6 +23,8 @@ TABLA:
     .DB 0x77, 0x50, 0x3B, 0x7A, 0x5C, 0x6E, 0x6F, 0x70, 0x7F, 0x7E, 0x7D, 0x4F, 0x27, 0x5B, 0x2F, 0x2D
 
 
+.org PCI1addr  ; Vector de interrupci?n para PCINT1 (PORTC)
+    RJMP ISR_PCINT1
 
 .org OVF0addr	; Vector de interrupción para TIMERO
 	RJMP ISR_TIMER0
@@ -47,7 +50,7 @@ SETUP:
 	// Configurar PB como salida para usarlo como del contador 
 	LDI		R16, 0xFF
 	OUT		DDRB, R16						// Puerto B como salida
-	LDI		R16, 0x02
+	LDI		R16, 0x00
 	OUT		PORTB, R16						//El puerto B conduce cero logico.
 
 	//Configurar PD como salida para usarlo para el display
@@ -55,6 +58,19 @@ SETUP:
 	OUT		DDRD, R16						// Puerto B como salida
 	LDI		R16, 0x00
 	OUT		PORTD, R16						//El puerto B conduce cero logico.
+
+	//Puerto C como entrada y Pull-up activados
+	LDI		R16, 0x00
+	OUT		DDRC, R16
+	LDI		R16, 0xFF
+	OUT		PORTC, R16
+
+	//Habilitar interrupciones en el pin C
+
+	LDI		R16, (PCIE1<<1)					//Encender PCIE1 en PCICR
+	STS		PCICR, R16						//Configurar interrupciones puerto C
+	LDI		R16, 0x03						//Configurar PC0 y PC1 en 
+	STS		PCMSK1, R16
 
 	// Deshabilitar serial (esto apaga los dem s LEDs del Arduino)?
 	LDI		R16, 0x00
@@ -92,28 +108,59 @@ INIT_TMR0:
 	OUT		TCNT0, R16						// Cargar valor inicial en TCNT0
 	RET
 
-//Rutina de interrupción
+//Rutina de interrupción TIMER
 ISR_TIMER0:
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	INCREMENTAR
-	LDI		CONTADOR, 0x00
 FIN:
+	OUT		PORTD, DISPLAY
 	RETI
-
-INCREMENTAR:	
+//
+INCREMENTAR:
+	LDI		CONTADOR, 0x00	
 	INC		COUNT_DISP							//Incrementar
 	CPI		COUNT_DISP, 0x0A					//Comparar para overflow
 	BREQ	OVERF
 	ADIW	Z,	1	
 	LPM		DISPLAY, Z
-	OUT		PORTD, DISPLAY
 	RJMP	FIN
 
 OVERF:
 	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
 	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
-	OUT		PORTD, DISPLAY
 	RJMP	FIN
+
+//Subrutinas para interrupciones de botones
+SUMA:
+	INC		LEDS								//Incrementa contador
+	CPI		LEDS, 0x10						//Comparar con 16
+	BREQ	OVERF
+	
+	RJMP	FIN
+RESTA:
+	CPI		LEDS, 0x00						//Compara el contador			
+	BREQ	UNDERF							
+	DEC		LEDS								//Decrementa el contador
+	RJMP	FIN
+
+OVERF:
+	LDI		LEDS, 0x00						//Reiniciar el contador a 0
+	RJMP	FIN
+UNDERF:
+	LDI		LEDS, 0x0F						//Reiniciar el contador a 15
+	RJMP	FIN
+
+
+//Subrutinas de interrupciön
+ISR_PCINT1:	
+	IN		BOTON, PINC						//Leer el estado de los botones
+	SBRS	BOTON, 0							//Salta si el bit 0 esta en set
+	RJMP	SUMA
+	SBRS	BOTON, 1							//Salta si el bit 1 esta en set
+	RJMP	RESTA
+FIN:
+	OUT		PORTB,	LEDS						//Actualiza la salida,
+	RETI
 		
