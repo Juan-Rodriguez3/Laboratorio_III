@@ -23,13 +23,19 @@
   <FILE>Laboratorio_III.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <SETUP><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>36</LINE></SETUP>
-  <TABLA><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>21</LINE></TABLA>
-  <ISR_TIMER0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>96</LINE></ISR_TIMER0>
-  <INIT_TMR0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>88</LINE></INIT_TMR0>
-  <MAIN><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>83</LINE></MAIN>
-  <INCREMENTAR><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>104</LINE></INCREMENTAR>
-  <FIN><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>100</LINE></FIN>
-  <OVERF><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>113</LINE></OVERF>
+  <SETUP><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>37</LINE></SETUP>
+  <ISR_PCINT1><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>157</LINE></ISR_PCINT1>
+  <ISR_TIMER0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>110</LINE></ISR_TIMER0>
+  <INIT_TMR0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>102</LINE></INIT_TMR0>
+  <TABLA><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>170</LINE></TABLA>
+  <MAIN><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>97</LINE></MAIN>
+  <INCREMENTAR><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>119</LINE></INCREMENTAR>
+  <FIN0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>115</LINE></FIN0>
+  <OVERF0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>128</LINE></OVERF0>
+  <SUMA><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>136</LINE></SUMA>
+  <OVERF1><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>148</LINE></OVERF1>
+  <FIN1><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>164</LINE></FIN1>
+  <RESTA><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>142</LINE></RESTA>
+  <UNDERF1><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm</FILE><LINE>151</LINE></UNDERF1>
  </LABELS>
 </ASSEMBLER_INFO>

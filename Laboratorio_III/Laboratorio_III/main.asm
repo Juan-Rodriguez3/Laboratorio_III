@@ -15,18 +15,16 @@
 .def	CONTADOR=R19
 .def	COUNT_DISP=R20
 .def	BOTON=R21
+
+
+
 .org 0x0000
 	RJMP SETUP  ; Ir a la configuraciOn al inicio
 
-// Tabla de conversión hexadecimal a 7 segmentos
-TABLA:
-    .DB 0x77, 0x50, 0x3B, 0x7A, 0x5C, 0x6E, 0x6F, 0x70, 0x7F, 0x7E, 0x7D, 0x4F, 0x27, 0x5B, 0x2F, 0x2D
-
-
-.org PCI1addr  ; Vector de interrupci?n para PCINT1 (PORTC)
+.org PCI1addr  ; Vector de interrupci?n para PCINT1 (PORTC) //0x0008
     RJMP ISR_PCINT1
 
-.org OVF0addr	; Vector de interrupción para TIMERO
+.org OVF0addr	; Vector de interrupción para TIMERO		//0x0020
 	RJMP ISR_TIMER0
 	
 	// Configuracion de la pila
@@ -110,10 +108,11 @@ INIT_TMR0:
 
 //Rutina de interrupción TIMER
 ISR_TIMER0:
+
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	INCREMENTAR
-FIN:
+FIN0:
 	OUT		PORTD, DISPLAY
 	RETI
 //
@@ -121,46 +120,52 @@ INCREMENTAR:
 	LDI		CONTADOR, 0x00	
 	INC		COUNT_DISP							//Incrementar
 	CPI		COUNT_DISP, 0x0A					//Comparar para overflow
-	BREQ	OVERF
+	BREQ	OVERF0
 	ADIW	Z,	1	
 	LPM		DISPLAY, Z
-	RJMP	FIN
+	RJMP	FIN0
 
-OVERF:
+OVERF0:
+	LDI		COUNT_DISP, 0x00
 	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
 	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
-	RJMP	FIN
+	RJMP	FIN0
 
 //Subrutinas para interrupciones de botones
 SUMA:
 	INC		LEDS								//Incrementa contador
 	CPI		LEDS, 0x10						//Comparar con 16
-	BREQ	OVERF
+	BREQ	OVERF1
 	
-	RJMP	FIN
+	RJMP	FIN1
 RESTA:
 	CPI		LEDS, 0x00						//Compara el contador			
-	BREQ	UNDERF							
+	BREQ	UNDERF1							
 	DEC		LEDS								//Decrementa el contador
-	RJMP	FIN
+	RJMP	FIN1
 
-OVERF:
+OVERF1:
 	LDI		LEDS, 0x00						//Reiniciar el contador a 0
-	RJMP	FIN
-UNDERF:
+	RJMP	FIN1
+UNDERF1:
 	LDI		LEDS, 0x0F						//Reiniciar el contador a 15
-	RJMP	FIN
+	RJMP	FIN1
 
 
 //Subrutinas de interrupciön
-ISR_PCINT1:	
+ISR_PCINT1:
+	
 	IN		BOTON, PINC						//Leer el estado de los botones
 	SBRS	BOTON, 0							//Salta si el bit 0 esta en set
 	RJMP	SUMA
 	SBRS	BOTON, 1							//Salta si el bit 1 esta en set
 	RJMP	RESTA
-FIN:
+FIN1:
 	OUT		PORTB,	LEDS						//Actualiza la salida,
 	RETI
-		
+
+
+// Tabla de conversión hexadecimal a 7 segmentos
+TABLA:
+    .DB 0x77, 0x50, 0x3B, 0x7A, 0x5C, 0x6E, 0x6F, 0x70, 0x7F, 0x7E, 0x7D, 0x4F, 0x27, 0x5B, 0x2F, 0x2D	
