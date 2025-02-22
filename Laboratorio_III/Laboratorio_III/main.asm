@@ -108,7 +108,6 @@ INIT_TMR0:
 
 //Rutina de interrupción TIMER
 ISR_TIMER0:
-
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	INCREMENTAR
@@ -126,10 +125,10 @@ INCREMENTAR:
 	RJMP	FIN0
 
 OVERF0:
-	LDI		COUNT_DISP, 0x00
 	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
 	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
+	LDI		COUNT_DISP, 0x00
 	RJMP	FIN0
 
 //Subrutinas para interrupciones de botones
@@ -155,14 +154,13 @@ UNDERF1:
 
 //Subrutinas de interrupciön
 ISR_PCINT1:
-	
-	IN		BOTON, PINC						//Leer el estado de los botones
+	IN		BOTON, PINC							//Leer el estado de los botones
 	SBRS	BOTON, 0							//Salta si el bit 0 esta en set
 	RJMP	SUMA
 	SBRS	BOTON, 1							//Salta si el bit 1 esta en set
 	RJMP	RESTA
 FIN1:
-	OUT		PORTB,	LEDS						//Actualiza la salida,
+	OUT		PORTB, LEDS							//Actualiza la salida,
 	RETI
 
 

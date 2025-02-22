@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm Fri Feb 21 18:20:46 2025
+AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm Fri Feb 21 18:50:26 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\main.asm(11): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1139,7 +1139,6 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\m
                                  
                                  //Rutina de interrupción TIMER
                                  ISR_TIMER0:
-                                 
 000054 9533                      	INC		CONTADOR
 000055 3634                      	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 000056 f011                      	BREQ	INCREMENTAR
@@ -1157,10 +1156,10 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\m
 00005f cff7                      	RJMP	FIN0
                                  
                                  OVERF0:
-000060 e040                      	LDI		COUNT_DISP, 0x00
-000061 e0f0                      	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-000062 efe0                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-000063 9124                      	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
+000060 e0f0                      	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
+000061 efe0                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
+000062 9124                      	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
+000063 e040                      	LDI		COUNT_DISP, 0x00
 000064 cff2                      	RJMP	FIN0
                                  
                                  //Subrutinas para interrupciones de botones
@@ -1186,14 +1185,13 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Laboratorio_III\Laboratorio_III\m
                                  
                                  //Subrutinas de interrupciön
                                  ISR_PCINT1:
-                                 	
-000071 b156                      	IN		BOTON, PINC						//Leer el estado de los botones
+000071 b156                      	IN		BOTON, PINC							//Leer el estado de los botones
 000072 ff50                      	SBRS	BOTON, 0							//Salta si el bit 0 esta en set
 000073 cff1                      	RJMP	SUMA
 000074 ff51                      	SBRS	BOTON, 1							//Salta si el bit 1 esta en set
 000075 cff3                      	RJMP	RESTA
                                  FIN1:
-000076 b915                      	OUT		PORTB,	LEDS						//Actualiza la salida,
+000076 b915                      	OUT		PORTB, LEDS							//Actualiza la salida,
 000077 9518                      	RETI
                                  
                                  
