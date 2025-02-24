@@ -59,9 +59,9 @@ SETUP:
 	OUT		PORTD, R16						//El puerto B conduce cero logico.
 
 	//Puerto C como entrada y Pull-up activados
-	LDI		R16, 0x00
-	OUT		DDRC, R16
-	LDI		R16, 0xFF
+	LDI		R16, 0b00001100					//Pin 0 y 1 entradas - Pin 2 y 3 Salidas
+	OUT		DDRC, R16						
+	LDI		R16, 0x00000011					//Pullup en PC0, PC1 - 0 lógico PC2, PC3
 	OUT		PORTC, R16
 
 	//Habilitar interrupciones en el pin C
@@ -102,7 +102,26 @@ SETUP:
 
 
 MAIN:
+	//Cargar las unidades
+	LPM		DISPLAY, Z						//Cargar en el display el puntero Z
+	OUT		PORTD, DISPLAY					//Cargar en los display
+	SBI		PORTC, 3						//Encender el display de unidades
+	CBI		PORTC, 2						//Apagar el display de decenas
+	CALL	DELAY
+	//Cargar las decenas
+	MOV		R24, ZL
+	MOV		R25, ZH
+	MOV		ZL, XL
+	MOV		ZH, XH
+	LPM		DISPLAY, Z						//Cargar en el display el puntero X
+	OUT		PORTD, DISPLAY					//Cargar en los displays 
+	CBI		PORTC, 3						//Apagar el display de unidades
+	SBI		PORTC, 2						//Encender el display de decenas
+	MOV		ZL, R24
+	MOV		ZH, R25
+	CALL	DELAY 
 	RJMP	MAIN							//Bucle
+
 
 
 //configurar el timer0 en 64 bits y cargarle el valor inicial al TCNT0
@@ -119,32 +138,31 @@ ISR_TIMER0:
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	INCREMENTAR
 FIN0:
-	OUT		PORTD, DISPLAY
 	RETI
 //
 INCREMENTAR:
 	LDI		CONTADOR, 0x00	
 	INC		UNI_DISP							//Incrementar
-	CPI		UNI_DISP, 0x0A					//Comparar para overflow
+	CPI		UNI_DISP, 0x0A						//Comparar para overflow
 	BREQ	OVERF0
-	ADIW	Z,	1	
-	LPM		DISPLAY, Z
+	ADIW	Z,	1								//Usar el puntero para avanzar en la tabla
 	RJMP	FIN0
 
 OVERF0:
 	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
 	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-	LPM		DISPLAY, Z						//Carga en R16 el valor de la tabla en ela dirreción Z
-	LDI		UNI_DISP, 0x00
-	INC		DEC_DISP
-	CPI		DEC_DISP, 0x0A					//Comparar para overflow
-	BREQ	OVERFD
+	LDI		UNI_DISP, 0x00					//Reseteamos unidades
+	INC		DEC_DISP						//Aumentamos decenas
+	CPI		DEC_DISP, 0x06					//Comparar para overflow de decenas
+	BREQ	OVERFD							
+	ADIW	X, 1							//usar el puntero X en la tabla
 	RJMP	FIN0
 
 OVERFD:
-	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-	LPM		DISPLAY, Z		
+	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
+	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
+	LDI		DEC_DISP, 0x00					//Reseteamos decenas
+	RJMP	FIN0		
 
 //Subrutinas para interrupciones de botones
 SUMA:
@@ -178,6 +196,14 @@ FIN1:
 	OUT		PORTB, LEDS							//Actualiza la salida,
 	RETI
 
+
+DELAY:
+	LDI R23, 10
+LOOP_DELAY:
+	DEC R23
+	CPI R23, 0
+	BRNE LOOP_DELAY
+	RET
 
 // Tabla de conversión hexadecimal a 7 segmentos
 TABLA:
