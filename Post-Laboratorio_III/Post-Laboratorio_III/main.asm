@@ -94,25 +94,35 @@ SETUP:
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
 
+
 	SEI										//Habilitar las interrupciones globales.
 
 MAIN:
+	//Incrementar el contador.
 	CPI		FLAG_INC, 0x01					//Revisar si paso un segundo
 	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
+
+	//cargar unidades
 	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+	//MULTIPLEXEAR
+	SBI		PORTC, 3
+	CBI		PORTC, 2
+	CALL	DELAY
+	//cargar decenas
+	LDI		DISPLAY, 0x77
+	//OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+	//MULTIPLEXEAR
 	SBI		PORTC, 2
 	CBI		PORTC, 3
 	CALL	DELAY
-	SBI		PORTC, 3
-	CBI		PORTC, 2
 	RJMP	MAIN
 
 INCREMENT:
 	EOR		FLAG_INC, VARIADOR				//Clear the flag
 	INC		UNI_DISP						//Incrementar el contador de unidades
 	CPI		UNI_DISP, 0x0A					//Comparar si hubo overflow
-	BREQ	OVERF_UNI						//
+	BREQ	OVERF_UNI						//Desbordamiento de unidades
 	ADIW	Z, 1							//Desplazarse una posición en la tabla
 	RJMP	MAIN
 
@@ -122,6 +132,7 @@ OVERF_UNI:
 	LDI		ZH, HIGH(TABLA<<1)				
 	LDI		ZL, LOW(TABLA<<1)
 	RJMP	MAIN			
+
 
 
 //*******Rutina de interrupción TIMER********
