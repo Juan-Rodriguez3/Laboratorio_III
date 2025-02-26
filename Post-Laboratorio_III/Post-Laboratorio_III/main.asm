@@ -105,19 +105,23 @@ MAIN:
 	//cargar unidades
 	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+
 	//MULTIPLEXEAR
 	SBI		PORTC, 3
 	CBI		PORTC, 2
 	CALL	DELAY
+
 	//cargar decenas
 	LDI		DISPLAY, 0x77
-	//OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+
 	//MULTIPLEXEAR
 	SBI		PORTC, 2
 	CBI		PORTC, 3
 	CALL	DELAY
 	RJMP	MAIN
 
+//*****Subrutinas globales******
 INCREMENT:
 	EOR		FLAG_INC, VARIADOR				//Clear the flag
 	INC		UNI_DISP						//Incrementar el contador de unidades
@@ -131,13 +135,15 @@ OVERF_UNI:
 	//Reiniciar el puntero Z
 	LDI		ZH, HIGH(TABLA<<1)				
 	LDI		ZL, LOW(TABLA<<1)
+	//Aumentar 
+
 	RJMP	MAIN			
 
-
+//*****Subrutinas globales******
 
 //*******Rutina de interrupción TIMER********
 ISR_TIMER0:
-	SBI     TIFR0, TOV0						; Limpiar bandera de interrupción del Timer0 Overflow
+	SBI     TIFR0, TOV0						// Limpiar bandera de interrupción del Timer0 Overflow
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	FLAG_ACTIVE
@@ -158,10 +164,9 @@ DELAY:
 	IN		R16, TIFR2
 	SBRS	R16, TOV2						//Hasta que la bandera de overflow se active
     RJMP    DELAY							//Se va a repetir el ciclo
+    SBI		TIFR2, TOV2						//Limpiar la bandera
 	LDI     R16, 194
-    STS     TCNT2, R16						//Cargar el valor inicial
-    LDI		R16, 0x01						//Limpiar la bandera 
-	STS		TIFR2, R16						//Limpiar la bandera de overflow
+    STS     TCNT2, R16						//Cargar el valor inicial 
     RET
 
 //Rutina para incrementar las unidades y decenas en el display

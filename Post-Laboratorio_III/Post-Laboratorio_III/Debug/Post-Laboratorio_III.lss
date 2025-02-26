@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm Wed Feb 26 01:38:42 2025
+AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm Wed Feb 26 02:14:31 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm(11): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1055,7 +1055,7 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  
                                  
                                  .org OVF0addr	; Vector de interrupción para TIMERO		//0x0020
-000020 c045                      	RJMP ISR_TIMER0
+000020 c046                      	RJMP ISR_TIMER0
                                  	
                                  	// Configuracion de la pila
 000021 ef0f                      	LDI		 R16, LOW(RAMEND)
@@ -1120,7 +1120,7 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  
                                  	//Usar el puntero Z como salida de display de unidades
 000049 e0f0                      	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-00004a efe0                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
+00004a eeee                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 00004b 9124                      	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
 00004c b92b                      	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
                                  
@@ -1131,7 +1131,7 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  MAIN:
                                  	//Incrementar el contador.
 00004e 3061                      	CPI		FLAG_INC, 0x01					//Revisar si paso un segundo
-00004f f061                      	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
+00004f f069                      	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
                                  
                                  	//cargar unidades
 000050 9124                      	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
@@ -1139,46 +1139,49 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  	//MULTIPLEXEAR
 000052 9a43                      	SBI		PORTC, 3
 000053 9842                      	CBI		PORTC, 2
-000054 940e 006e                 	CALL	DELAY
+000054 940e 006f                 	CALL	DELAY
+                                 
                                  	//cargar decenas
 000056 e727                      	LDI		DISPLAY, 0x77
-                                 	//OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+                                 
+000057 b92b                      	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+                                 
                                  	//MULTIPLEXEAR
-000057 9a42                      	SBI		PORTC, 2
-000058 9843                      	CBI		PORTC, 3
-000059 940e 006e                 	CALL	DELAY
-00005b cff2                      	RJMP	MAIN
+000058 9a42                      	SBI		PORTC, 2
+000059 9843                      	CBI		PORTC, 3
+00005a 940e 006f                 	CALL	DELAY
+00005c cff1                      	RJMP	MAIN
                                  
                                  INCREMENT:
-00005c 2767                      	EOR		FLAG_INC, VARIADOR				//Clear the flag
-00005d 9543                      	INC		UNI_DISP						//Incrementar el contador de unidades
-00005e 304a                      	CPI		UNI_DISP, 0x0A					//Comparar si hubo overflow
-00005f f011                      	BREQ	OVERF_UNI						//Desbordamiento de unidades
-000060 9631                      	ADIW	Z, 1							//Desplazarse una posición en la tabla
-000061 cfec                      	RJMP	MAIN
+00005d 2767                      	EOR		FLAG_INC, VARIADOR				//Clear the flag
+00005e 9543                      	INC		UNI_DISP						//Incrementar el contador de unidades
+00005f 304a                      	CPI		UNI_DISP, 0x0A					//Comparar si hubo overflow
+000060 f011                      	BREQ	OVERF_UNI						//Desbordamiento de unidades
+000061 9631                      	ADIW	Z, 1							//Desplazarse una posición en la tabla
+000062 cfeb                      	RJMP	MAIN
                                  
                                  OVERF_UNI:
-000062 e040                      	LDI		UNI_DISP, 0x00					//Reiniciar el contador de unidades
+000063 e040                      	LDI		UNI_DISP, 0x00					//Reiniciar el contador de unidades
                                  	//Reiniciar el puntero Z
-000063 e0f0                      	LDI		ZH, HIGH(TABLA<<1)				
-000064 efe0                      	LDI		ZL, LOW(TABLA<<1)
-000065 cfe8                      	RJMP	MAIN			
+000064 e0f0                      	LDI		ZH, HIGH(TABLA<<1)				
+000065 eeee                      	LDI		ZL, LOW(TABLA<<1)
+000066 cfe7                      	RJMP	MAIN			
                                  
                                  
                                  
                                  //*******Rutina de interrupción TIMER********
                                  ISR_TIMER0:
-000066 9aa8                      	SBI     TIFR0, TOV0						; Limpiar bandera de interrupción del Timer0 Overflow
-000067 9533                      	INC		CONTADOR
-000068 3634                      	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
-000069 f009                      	BREQ	FLAG_ACTIVE
+000067 9aa8                      	SBI     TIFR0, TOV0						// Limpiar bandera de interrupción del Timer0 Overflow
+000068 9533                      	INC		CONTADOR
+000069 3634                      	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
+00006a f009                      	BREQ	FLAG_ACTIVE
                                  FIN0:
-00006a 9518                      	RETI
+00006b 9518                      	RETI
                                  //
                                  FLAG_ACTIVE:
-00006b e030                      	LDI		CONTADOR, 0x00					//R19
-00006c 2767                      	EOR		FLAG_INC, VARIADOR				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
-00006d cffc                      	RJMP	FIN0		
+00006c e030                      	LDI		CONTADOR, 0x00					//R19
+00006d 2767                      	EOR		FLAG_INC, VARIADOR				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
+00006e cffc                      	RJMP	FIN0		
                                  //*******Rutina de interrupción TIMER********
                                  
                                  
@@ -1186,14 +1189,13 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  //*******SubrutinaS - no interupcciones********
                                  //Delay con el timer2
                                  DELAY:
-00006e b307                      	IN		R16, TIFR2
-00006f ff00                      	SBRS	R16, TOV2						//Hasta que la bandera de overflow se active
-000070 cffd                          RJMP    DELAY							//Se va a repetir el ciclo
-000071 ec02                      	LDI     R16, 194
-000072 9300 00b2                     STS     TCNT2, R16						//Cargar el valor inicial
-000074 e001                          LDI		R16, 0x01						//Limpiar la bandera 
-000075 9300 0017                 	STS		TIFR2, R16						//Limpiar la bandera de overflow
-000077 9508                          RET
+00006f b307                      	IN		R16, TIFR2
+000070 ff00                      	SBRS	R16, TOV2						//Hasta que la bandera de overflow se active
+000071 cffd                          RJMP    DELAY							//Se va a repetir el ciclo
+000072 9ab8                          SBI		TIFR2, TOV2						//Limpiar la bandera
+000073 ec02                      	LDI     R16, 194
+000074 9300 00b2                     STS     TCNT2, R16						//Cargar el valor inicial 
+000076 9508                          RET
                                  
                                  //Rutina para incrementar las unidades y decenas en el display
                                  
@@ -1202,13 +1204,14 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  
                                  // Tabla de conversión hexadecimal a 7 segmentos
                                  TABLA:
-000078 5077
-000079 7a3b
-00007a 6e5c
-00007b 706f
-00007c 7e7f
-00007d 4f7d
-00007e 5b27
+000077 5077
+000078 7a3b
+000079 6e5c
+00007a 706f
+00007b 7e7f
+00007c 4f7d
+00007d 5b27
+00007e 2d2f                          .DB 0x77, 0x50, 0x3B, 0x7A, 0x5C, 0x6E, 0x6F, 0x70, 0x7F, 0x7E, 0x7D, 0x4F, 0x27, 0x5B, 0x2F, 0x2D	
 
 
 RESOURCE USE INFORMATION
@@ -1228,7 +1231,7 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   0 y  :   0 z  :   3 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  35 r17:   0 r18:   6 r19:   4 r20:   3 
+r13:   0 r14:   0 r15:   0 r16:  33 r17:   0 r18:   7 r19:   4 r20:   3 
 r21:   0 r22:   4 r23:   3 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   2 r31:   2 
 Registers used: 9 out of 35 (25.7%)
@@ -1244,21 +1247,21 @@ clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :   0 cls   :   0
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
 cpi   :   3 cpse  :   0 dec   :   0 eor   :   2 fmul  :   0 fmuls :   0 
 fmulsu:   0 icall :   0 ijmp  :   0 in    :   1 inc   :   2 jmp   :   0 
-ld    :   0 ldd   :   0 ldi   :  28 lds   :   0 lpm   :   4 lsl   :   0 
+ld    :   0 ldd   :   0 ldi   :  27 lds   :   0 lpm   :   4 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  10 pop   :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  11 pop   :   0 
 push  :   0 rcall :   0 ret   :   1 reti  :   1 rjmp  :   7 rol   :   0 
-ror   :   0 sbc   :   0 sbci  :   0 sbi   :   3 sbic  :   0 sbis  :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :   4 sbic  :   0 sbis  :   0 
 sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   1 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   8 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   7 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
 Instructions used: 19 out of 113 (16.8%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000100    178     16    194   32768   0.6%
+[.cseg] 0x000000 0x0000fe    176     16    192   32768   0.6%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
