@@ -14,6 +14,7 @@
 .def	CONTADOR=R19
 .def	UNI_DISP=R20
 .def	DEC_DISP=R21
+.def	FLAG_INC=R22
 
 
 
@@ -76,6 +77,7 @@ SETUP:
 	//Valor inicial de variables generales
 	LDI		DISPLAY, 0x00
 	LDI		CONTADOR, 0x00
+	LDI		FLAG_INC, 0x00
 	LDI		R16, 0x00
 
 
@@ -90,7 +92,7 @@ SETUP:
 	//Usar el puntero Z como salida de display de unidades
 	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
 	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-
+	
 
 DELAY_TIMER2:
     LDI     R16, 194						//Delay de 2 ms 
@@ -129,22 +131,16 @@ MAIN:
 
 //*******Rutina de interrupción TIMER********
 ISR_TIMER0:
-	PUSH	R16
-	IN		R16, SREG  ; Carga el valor de SREG en R16
-	PUSH	R16
 	SBI     TIFR0, TOV0						; Limpiar bandera de interrupción del Timer0 Overflow
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
 	BREQ	INCREMENTAR
 FIN0:
-	POP		R16
-	OUT		SREG, R16
-	POP		R16
 	RETI
 //
 INCREMENTAR:
-	LDI		CONTADOR, 0x00
-	INC		UNI_DISP
+	LDI		CONTADOR, 0x00					//R19
+	LDI		FLAG_INC, 0x01					//Ya paso un segundo, toca actualizar salida
 	RJMP	FIN0		
 //*******Rutina de interrupción TIMER********
 
@@ -164,12 +160,18 @@ DELAY:
 
 //Rutina para incrementar las unidades y decenas en el display
 INCREMENTAR_DISPLAY:
-	CPI		UNI_DISP, 0x0A
-	BREQ	OVERF_UNI
-	ADIW	Z, 1
+	SBRC	FLAG_INC, 0						//Esperando que la bandera se active luego de un segundo
+	RJMP	INCREMENT
 RETURN:
 	RET
 
+INCREMENT:
+	LDI		FLAG_INC, 0x00					//Reiniciar bandera
+	INC		UNI_DISP						//Incrementar unidades de segundo
+	CPI		UNI_DISP, 0x0A					//R20
+	BREQ	OVERF_UNI
+	ADIW	Z, 1
+	RJMP	RETURN
 
 OVERF_UNI:
 	LDI		UNI_DISP, 0x00
