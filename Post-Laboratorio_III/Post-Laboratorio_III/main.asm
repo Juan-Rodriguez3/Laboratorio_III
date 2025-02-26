@@ -15,7 +15,6 @@
 .def	UNI_DISP=R20
 .def	DEC_DISP=R21
 .def	FLAG_INC=R22
-.def	VARIADOR=R23
 
 
 
@@ -83,8 +82,8 @@ SETUP:
 	LDI		DISPLAY, 0x00
 	LDI		CONTADOR, 0x00
 	LDI		FLAG_INC, 0x00
-	LDI		VARIADOR, 0x01
 	LDI		R16, 0x00
+	LDI		UNI_DISP, 0x00
 
 
 	//Usar el puntero Z como salida de display de unidades
@@ -93,17 +92,19 @@ SETUP:
 	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
-
+	//Usar el puntero X para las decenas
+	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro xH
+	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la direcci?n de la tabla en el registro xL
 
 	SEI										//Habilitar las interrupciones globales.
 
 MAIN:
-	//Incrementar el contador.
+	//Incrementar el contador de unidades.
 	CPI		FLAG_INC, 0x01					//Revisar si paso un segundo
 	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
 
 	//cargar unidades
-	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
+	LD		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
 	//MULTIPLEXEAR
@@ -111,11 +112,15 @@ MAIN:
 	CBI		PORTC, 2
 	CALL	DELAY
 
-	//cargar decenas
-	LDI		DISPLAY, 0x77
-	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+	//Cargar al puerto D las decenas
+	LD		DISPLAY, X
+	OUT		PORTD, DISPLAY
+	
+	//apagar los display 
+	CBI		PORTC, 2
+	CBI		PORTC, 3			
 
-	//MULTIPLEXEAR
+	//MULTIPLEXEAR para decenas
 	SBI		PORTC, 2
 	CBI		PORTC, 3
 	CALL	DELAY
@@ -123,36 +128,48 @@ MAIN:
 
 //*****Subrutinas globales******
 INCREMENT:
-	EOR		FLAG_INC, VARIADOR				//Clear the flag
-	INC		UNI_DISP						//Incrementar el contador de unidades
-	CPI		UNI_DISP, 0x0A					//Comparar si hubo overflow
-	BREQ	OVERF_UNI						//Desbordamiento de unidades
-	ADIW	Z, 1							//Desplazarse una posici?n en la tabla
+	LDI		FLAG_INC, 0x00						//Clear the flag
+	INC		UNI_DISP							//Incrementar el contador de unidades
+	CPI		UNI_DISP, 10						//Comparar si hubo overflow
+	BREQ	OVERF_UNI							//Desbordamiento de unidades
+	ADIW	Z, 1								//Desplazarse una posici?n en la tabla
 	RJMP	MAIN
 
-OVERF_UNI:
-	LDI		UNI_DISP, 0x00					//Reiniciar el contador de unidades
+OVERF_UNI:	
+	LDI		UNI_DISP, 0x00						//Reiniciar el contador de unidades
 	//Reiniciar el puntero Z
 	LDI		ZH, HIGH(TABLA<<1)				
 	LDI		ZL, LOW(TABLA<<1)
 	//Aumentar decenas
+	INC		DEC_DISP
+	CPI		DEC_DISP, 6							//Comparar con 6	
+	BREQ	OVERF_DEC							//Desbordamiento de decenas	
+	ADIW	X, 1								//Mover el puntero de decenas
 	RJMP	MAIN			
+
+OVERF_DEC:
+	LDI		DEC_DISP, 0x00						//Reiniciar el contado de decenas
+	LDI		XH, HIGH(TABLA<<1)					//Carga la direccion inical parte alta
+	LDI		XL, LOW(TABLA<<1)					//Carga la direccion inicial parte baja
+	RJMP	MAIN
+	 
 
 //*****Subrutinas globales******
 
+
+
 //*******Rutina de interrupci?n TIMER********
 ISR_TIMER0:
-	SBI     TIFR0, TOV0						// Limpiar bandera de interrupci?n del Timer0 Overflow
+	//Recargar el valor inicial del TCNT0
+	LDI		R16, 100						//Se carga este valor para interrumpir cada 10 ms
+	OUT		TCNT0, R16						// Cargar valor inicial en TCNT0
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupci?n ocurre 10 ms*100=1000ms
-	BREQ	FLAG_ACTIVE
+	BRNE	FIN0
+	LDI		CONTADOR, 0x00					//R19
+	LDI		FLAG_INC, 0x01				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
 FIN0:
 	RETI
-//
-FLAG_ACTIVE:
-	LDI		CONTADOR, 0x00					//R19
-	EOR		FLAG_INC, VARIADOR				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
-	RJMP	FIN0		
 //*******Rutina de interrupci?n TIMER********
 
 
@@ -167,11 +184,9 @@ DELAY:
 	LDI     R16, 194
     STS     TCNT2, R16						//Cargar el valor inicial 
     RET
-
-//Rutina para incrementar las unidades y decenas en el display
-
-
 //*******SubrutinaS - no interupcciones********
+
+
 
 // Tabla de conversi?n hexadecimal a 7 segmentos
 TABLA:
