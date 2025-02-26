@@ -93,6 +93,9 @@ SETUP:
 	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
+	//Usar el puntero X como salida de display de decenas
+	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
+	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 
 
 	SEI										//Habilitar las interrupciones globales.
@@ -135,8 +138,7 @@ OVERF_UNI:
 	//Reiniciar el puntero Z
 	LDI		ZH, HIGH(TABLA<<1)				
 	LDI		ZL, LOW(TABLA<<1)
-	//Aumentar 
-
+	//Aumentar decenas
 	RJMP	MAIN			
 
 //*****Subrutinas globales******
