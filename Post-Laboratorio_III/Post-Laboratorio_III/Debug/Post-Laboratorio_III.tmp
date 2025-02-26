@@ -24,15 +24,13 @@
  </OUTPUT_FILES>
  <LABELS>
   <SETUP><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>35</LINE></SETUP>
-  <ISR_TIMER0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>130</LINE></ISR_TIMER0>
-  <INIT_TMR0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>122</LINE></INIT_TMR0>
-  <TABLA><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>177</LINE></TABLA>
-  <DELAY_TIMER2><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>85</LINE></DELAY_TIMER2>
-  <MAIN><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>98</LINE></MAIN>
-  <DELAY><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>170</LINE></DELAY>
-  <INCREMENTAR><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>144</LINE></INCREMENTAR>
-  <FIN0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>138</LINE></FIN0>
-  <OVERF0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>152</LINE></OVERF0>
-  <OVERFD><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>162</LINE></OVERFD>
+  <ISR_TIMER0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>131</LINE></ISR_TIMER0>
+  <TABLA><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>175</LINE></TABLA>
+  <DELAY_TIMER2><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>95</LINE></DELAY_TIMER2>
+  <MAIN><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>103</LINE></MAIN>
+  <INCREMENTAR_DISPLAY><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>166</LINE></INCREMENTAR_DISPLAY>
+  <DELAY><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>155</LINE></DELAY>
+  <INCREMENTAR><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>145</LINE></INCREMENTAR>
+  <FIN0><FILE>C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm</FILE><LINE>139</LINE></FIN0>
  </LABELS>
 </ASSEMBLER_INFO>
