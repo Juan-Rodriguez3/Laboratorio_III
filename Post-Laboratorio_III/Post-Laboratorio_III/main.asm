@@ -15,7 +15,7 @@
 .def	UNI_DISP=R20
 .def	DEC_DISP=R21
 .def	FLAG_INC=R22
-
+.def	VARIADOR=R23
 
 
 
@@ -73,11 +73,17 @@ SETUP:
 	LDI		R16,	(1<<TOIE0)				//Encender el enable de las interrupciones
 	STS		TIMSK0, R16						//Cargarle el nuevo valor a mascara
 	
+	DELAY_TIMER2:
+    LDI     R16, 194						//Delay de 2 ms 
+    STS     TCNT2, R16						//Cargar el valor inicial
+    LDI     R16, (1 << CS21) | (1 << CS20)	//Prescaler de 32
+    STS     TCCR2B, R16
 
 	//Valor inicial de variables generales
 	LDI		DISPLAY, 0x00
 	LDI		CONTADOR, 0x00
 	LDI		FLAG_INC, 0x00
+	LDI		VARIADOR, 0x01
 	LDI		R16, 0x00
 
 
@@ -88,45 +94,34 @@ SETUP:
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
 
-	//Usar el puntero X como salida de display de unidades
-	//Usar el puntero Z como salida de display de unidades
-	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-	
-
-DELAY_TIMER2:
-    LDI     R16, 194						//Delay de 2 ms 
-    STS     TCNT2, R16						//Cargar el valor inicial
-    LDI     R16, (1 << CS21) | (1 << CS20)	//Prescaler de 32
-    STS     TCCR2B, R16
-
 	SEI										//Habilitar las interrupciones globales.
 
 MAIN:
-	//Cargar las unidades
-	CALL	INCREMENTAR_DISPLAY
-	LPM		DISPLAY, Z						//Cargar en el display el puntero Z
-	OUT		PORTD, DISPLAY					//Cargar en los display
-	SBI		PORTC, 3						//Encender el display de unidades
-	CBI		PORTC, 2						//Apagar el display de decenas
+	CPI		FLAG_INC, 0x01					//Revisar si paso un segundo
+	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
+	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
+	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+	SBI		PORTC, 2
+	CBI		PORTC, 3
 	CALL	DELAY
-	//Cargar las decenas
-	MOV		R24, ZL
-	MOV		R25, ZH
-	MOV		ZL, XL
-	MOV		ZH, XH
-	LPM		DISPLAY, Z						//Cargar en el display el puntero X
-	OUT		PORTD, DISPLAY					//Cargar en los displays 
-	CBI		PORTC, 3						//Apagar el display de unidades
-	SBI		PORTC, 2						//Encender el display de decenas
-	MOV		ZL, R24
-	MOV		ZH, R25
-	CALL	DELAY 
-	RJMP	MAIN							//Bucle
+	SBI		PORTC, 3
+	CBI		PORTC, 2
+	RJMP	MAIN
 
+INCREMENT:
+	EOR		FLAG_INC, VARIADOR				//Clear the flag
+	INC		UNI_DISP						//Incrementar el contador de unidades
+	CPI		UNI_DISP, 0x0A					//Comparar si hubo overflow
+	BREQ	OVERF_UNI						//
+	ADIW	Z, 1							//Desplazarse una posición en la tabla
+	RJMP	MAIN
 
-
-
+OVERF_UNI:
+	LDI		UNI_DISP, 0x00					//Reiniciar el contador de unidades
+	//Reiniciar el puntero Z
+	LDI		ZH, HIGH(TABLA<<1)				
+	LDI		ZL, LOW(TABLA<<1)
+	RJMP	MAIN			
 
 
 //*******Rutina de interrupción TIMER********
@@ -134,63 +129,33 @@ ISR_TIMER0:
 	SBI     TIFR0, TOV0						; Limpiar bandera de interrupción del Timer0 Overflow
 	INC		CONTADOR
 	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
-	BREQ	INCREMENTAR
+	BREQ	FLAG_ACTIVE
 FIN0:
 	RETI
 //
-INCREMENTAR:
+FLAG_ACTIVE:
 	LDI		CONTADOR, 0x00					//R19
-	LDI		FLAG_INC, 0x01					//Ya paso un segundo, toca actualizar salida
+	EOR		FLAG_INC, VARIADOR				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
 	RJMP	FIN0		
 //*******Rutina de interrupción TIMER********
 
 
 
 //*******SubrutinaS - no interupcciones********
-//Delay con el timer
+//Delay con el timer2
 DELAY:
 	IN		R16, TIFR2
 	SBRS	R16, TOV2						//Hasta que la bandera de overflow se active
     RJMP    DELAY							//Se va a repetir el ciclo
 	LDI     R16, 194
     STS     TCNT2, R16						//Cargar el valor inicial
-    LDI		R16, (1 << TOV2)				//Limpiar la bandera 
+    LDI		R16, 0x01						//Limpiar la bandera 
 	STS		TIFR2, R16						//Limpiar la bandera de overflow
     RET
 
 //Rutina para incrementar las unidades y decenas en el display
-INCREMENTAR_DISPLAY:
-	SBRC	FLAG_INC, 0						//Esperando que la bandera se active luego de un segundo
-	RJMP	INCREMENT
-RETURN:
-	RET
-
-INCREMENT:
-	LDI		FLAG_INC, 0x00					//Reiniciar bandera
-	INC		UNI_DISP						//Incrementar unidades de segundo
-	CPI		UNI_DISP, 0x0A					//R20
-	BREQ	OVERF_UNI
-	ADIW	Z, 1
-	RJMP	RETURN
-
-OVERF_UNI:
-	LDI		UNI_DISP, 0x00
-	//Resetear el puntero Z a su posicion inicial
-	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-	//Sumarle al puntero X para aumentar las decenas
-	INC		DEC_DISP
-	CPI		DEC_DISP, 0x06
-	BREQ	OVERF_DEC
-	ADIW	X, 1
-	RJMP	RETURN
 
 
-OVERF_DEC:
-	LDI		DEC_DISP, 0x00
-	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-	RJMP	RETURN
 //*******SubrutinaS - no interupcciones********
 
 // Tabla de conversión hexadecimal a 7 segmentos
