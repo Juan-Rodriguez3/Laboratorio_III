@@ -23,7 +23,7 @@
 	RJMP SETUP  ; Ir a la configuraciOn al inicio
 
 
-.org OVF0addr	; Vector de interrupción para TIMERO		//0x0020
+.org OVF0addr	; Vector de interrupci?n para TIMERO		//0x0020
 	RJMP ISR_TIMER0
 	
 	// Configuracion de la pila
@@ -60,7 +60,7 @@ SETUP:
 	//Puerto C como entrada y Pull-up activados
 	LDI		R16, 0b00001100					//Pin 0 y 1 entradas - Pin 2 y 3 Salidas
 	OUT		DDRC, R16						
-	LDI		R16, 0b11110011					//Pullup en PC0, PC1 - 0 lógico PC2, PC3
+	LDI		R16, 0b11110011					//Pullup en PC0, PC1 - 0 l?gico PC2, PC3
 	OUT		PORTC, R16
 
 
@@ -88,14 +88,11 @@ SETUP:
 
 
 	//Usar el puntero Z como salida de display de unidades
-	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
-	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
+	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro ZH
+	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la direcci?n de la tabla en el registro ZL
+	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
-	//Usar el puntero X como salida de display de decenas
-	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la dirección de tabla en el registro ZH
-	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la dirección de la tabla en el registro ZL
 
 
 	SEI										//Habilitar las interrupciones globales.
@@ -106,7 +103,7 @@ MAIN:
 	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
 
 	//cargar unidades
-	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreción Z
+	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
 	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
 
 	//MULTIPLEXEAR
@@ -130,7 +127,7 @@ INCREMENT:
 	INC		UNI_DISP						//Incrementar el contador de unidades
 	CPI		UNI_DISP, 0x0A					//Comparar si hubo overflow
 	BREQ	OVERF_UNI						//Desbordamiento de unidades
-	ADIW	Z, 1							//Desplazarse una posición en la tabla
+	ADIW	Z, 1							//Desplazarse una posici?n en la tabla
 	RJMP	MAIN
 
 OVERF_UNI:
@@ -143,11 +140,11 @@ OVERF_UNI:
 
 //*****Subrutinas globales******
 
-//*******Rutina de interrupción TIMER********
+//*******Rutina de interrupci?n TIMER********
 ISR_TIMER0:
-	SBI     TIFR0, TOV0						// Limpiar bandera de interrupción del Timer0 Overflow
+	SBI     TIFR0, TOV0						// Limpiar bandera de interrupci?n del Timer0 Overflow
 	INC		CONTADOR
-	CPI		CONTADOR, 100					//Cada interrupción ocurre 10 ms*100=1000ms
+	CPI		CONTADOR, 100					//Cada interrupci?n ocurre 10 ms*100=1000ms
 	BREQ	FLAG_ACTIVE
 FIN0:
 	RETI
@@ -156,7 +153,7 @@ FLAG_ACTIVE:
 	LDI		CONTADOR, 0x00					//R19
 	EOR		FLAG_INC, VARIADOR				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
 	RJMP	FIN0		
-//*******Rutina de interrupción TIMER********
+//*******Rutina de interrupci?n TIMER********
 
 
 
@@ -176,6 +173,6 @@ DELAY:
 
 //*******SubrutinaS - no interupcciones********
 
-// Tabla de conversión hexadecimal a 7 segmentos
+// Tabla de conversi?n hexadecimal a 7 segmentos
 TABLA:
     .DB 0x77, 0x50, 0x3B, 0x7A, 0x5C, 0x6E, 0x6F, 0x70, 0x7F, 0x7E, 0x7D, 0x4F, 0x27, 0x5B, 0x2F, 0x2D	
