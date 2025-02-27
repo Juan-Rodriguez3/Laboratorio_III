@@ -10,6 +10,8 @@
 ;*********************
 .include "M328PDEF.inc"
 .cseg
+.def	LEDS=R17
+.def	BOTON=R23
 .def	DISPLAY=R18
 .def	CONTADOR=R19
 .def	UNI_DISP=R20
@@ -21,6 +23,8 @@
 .org 0x0000
 	RJMP SETUP  ; Ir a la configuraciOn al inicio
 
+.org PCI1addr  ; Vector de interrupci?n para PCINT1 (PORTC) //0x0008
+    RJMP ISR_PCINT1
 
 .org OVF0addr	; Vector de interrupci?n para TIMERO		//0x0020
 	RJMP ISR_TIMER0
@@ -40,6 +44,18 @@ SETUP:
 	LDI		R16, 0b00000100
 	STS		CLKPR, R16						// Configurar Prescaler a 16 F_cpu = 1MHz
 
+	// Configurar PB como salida para usarlo como del contador 
+	LDI		R16, 0xFF
+	OUT		DDRB, R16						// Puerto B como salida
+	LDI		R16, 0x00
+	OUT		PORTB, R16						//El puerto B conduce cero logico.
+
+	//Habilitar interrupciones en el pin C
+
+	LDI		R16, (PCIE1<<1)					//Encender PCIE1 en PCICR
+	STS		PCICR, R16						//Configurar interrupciones puerto C
+	LDI		R16, 0x03						//Configurar PC0 y PC1 en 
+	STS		PCMSK1, R16						
 
 	// Inicializar timer0
 	//configurar el timer0 en 64 bits y cargarle el valor inicial al TCNT0
@@ -84,7 +100,8 @@ SETUP:
 	LDI		FLAG_INC, 0x00
 	LDI		R16, 0x00
 	LDI		UNI_DISP, 0x00
-
+	LDI		LEDS, 0x00
+	LDI		BOTON, 0x00
 
 	//Usar el puntero Z como salida de display de unidades
 	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro ZH
@@ -186,7 +203,41 @@ DELAY:
     RET
 //*******SubrutinaS - no interupcciones********
 
+//********Subrutinas interrupciones pin change*******
 
+//Subrutinas para interrupciones de botones
+SUMA:
+	INC		LEDS								//Incrementa contador
+	CPI		LEDS, 0x10						//Comparar con 16
+	BREQ	OVERF1
+	
+	RJMP	FIN1
+RESTA:
+	CPI		LEDS, 0x00						//Compara el contador			
+	BREQ	UNDERF1							
+	DEC		LEDS								//Decrementa el contador
+	RJMP	FIN1
+
+OVERF1:
+	LDI		LEDS, 0x00						//Reiniciar el contador a 0
+	RJMP	FIN1
+UNDERF1:
+	LDI		LEDS, 0x0F						//Reiniciar el contador a 15
+	RJMP	FIN1
+
+
+//Subrutinas de interrupciön
+ISR_PCINT1:
+	IN		BOTON, PINC							//Leer el estado de los botones
+	SBRS	BOTON, 0							//Salta si el bit 0 esta en set
+	RJMP	SUMA
+	SBRS	BOTON, 1							//Salta si el bit 1 esta en set
+	RJMP	RESTA
+FIN1:
+	OUT		PORTB, LEDS							//Actualiza la salida,
+	RETI
+
+//********Subrutinas interrupciones pin change*******0
 
 // Tabla de conversi?n hexadecimal a 7 segmentos
 TABLA:

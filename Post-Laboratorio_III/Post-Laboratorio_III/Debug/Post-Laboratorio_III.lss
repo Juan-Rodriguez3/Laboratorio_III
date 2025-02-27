@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm Wed Feb 26 17:11:45 2025
+AVRASM ver. 2.2.8  C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm Wed Feb 26 20:26:50 2025
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m328Pdef.inc'
 C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laboratorio_III\main.asm(11): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\M328PDEF.inc'
@@ -1041,6 +1041,8 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  
                                  ; ***** END OF FILE ******************************************************
                                  .cseg
+                                 .def	LEDS=R17
+                                 .def	BOTON=R23
                                  .def	DISPLAY=R18
                                  .def	CONTADOR=R19
                                  .def	UNI_DISP=R20
@@ -1052,9 +1054,11 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  .org 0x0000
 000000 c024                      	RJMP SETUP  ; Ir a la configuraciOn al inicio
                                  
+                                 .org PCI1addr  ; Vector de interrupci?n para PCINT1 (PORTC) //0x0008
+000008 c092                          RJMP ISR_PCINT1
                                  
                                  .org OVF0addr	; Vector de interrupci?n para TIMERO		//0x0020
-000020 c052                      	RJMP ISR_TIMER0
+000020 c05e                      	RJMP ISR_TIMER0
                                  	
                                  	// Configuracion de la pila
 000021 ef0f                      	LDI		 R16, LOW(RAMEND)
@@ -1071,118 +1075,131 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
 000029 e004                      	LDI		R16, 0b00000100
 00002a 9300 0061                 	STS		CLKPR, R16						// Configurar Prescaler a 16 F_cpu = 1MHz
                                  
+                                 	// Configurar PB como salida para usarlo como del contador 
+00002c ef0f                      	LDI		R16, 0xFF
+00002d b904                      	OUT		DDRB, R16						// Puerto B como salida
+00002e e000                      	LDI		R16, 0x00
+00002f b905                      	OUT		PORTB, R16						//El puerto B conduce cero logico.
+                                 
+                                 	//Habilitar interrupciones en el pin C
+                                 
+000030 e002                      	LDI		R16, (PCIE1<<1)					//Encender PCIE1 en PCICR
+000031 9300 0068                 	STS		PCICR, R16						//Configurar interrupciones puerto C
+000033 e003                      	LDI		R16, 0x03						//Configurar PC0 y PC1 en 
+000034 9300 006c                 	STS		PCMSK1, R16						
                                  
                                  	// Inicializar timer0
                                  	//configurar el timer0 en 64 bits y cargarle el valor inicial al TCNT0
-00002c e003                      	LDI		R16, (1<<CS01) | (1<<CS00)
-00002d bd05                      	OUT		TCCR0B, R16						// Setear prescaler del TIMER 0 a 64
-00002e e604                      	LDI		R16, 100						//Se carga este valor para interrumpir cada 10 ms
-00002f bd06                      	OUT		TCNT0, R16						// Cargar valor inicial en TCNT0
+000036 e003                      	LDI		R16, (1<<CS01) | (1<<CS00)
+000037 bd05                      	OUT		TCCR0B, R16						// Setear prescaler del TIMER 0 a 64
+000038 e604                      	LDI		R16, 100						//Se carga este valor para interrumpir cada 10 ms
+000039 bd06                      	OUT		TCNT0, R16						// Cargar valor inicial en TCNT0
                                  	
                                  
                                  	//Configurar PD como salida para usarlo para el display
-000030 ef0f                      	LDI		R16, 0xFF
-000031 b90a                      	OUT		DDRD, R16						// Puerto B como salida
-000032 e000                      	LDI		R16, 0x00
-000033 b90b                      	OUT		PORTD, R16						//El puerto B conduce cero logico.
+00003a ef0f                      	LDI		R16, 0xFF
+00003b b90a                      	OUT		DDRD, R16						// Puerto B como salida
+00003c e000                      	LDI		R16, 0x00
+00003d b90b                      	OUT		PORTD, R16						//El puerto B conduce cero logico.
                                  
                                  
                                  	//Puerto C como entrada y Pull-up activados
-000034 e00c                      	LDI		R16, 0b00001100					//Pin 0 y 1 entradas - Pin 2 y 3 Salidas
-000035 b907                      	OUT		DDRC, R16						
-000036 ef03                      	LDI		R16, 0b11110011					//Pullup en PC0, PC1 - 0 l?gico PC2, PC3
-000037 b908                      	OUT		PORTC, R16
+00003e e00c                      	LDI		R16, 0b00001100					//Pin 0 y 1 entradas - Pin 2 y 3 Salidas
+00003f b907                      	OUT		DDRC, R16						
+000040 ef03                      	LDI		R16, 0b11110011					//Pullup en PC0, PC1 - 0 l?gico PC2, PC3
+000041 b908                      	OUT		PORTC, R16
                                  
                                  
                                  	// Deshabilitar serial (esto apaga los dem s LEDs del Arduino)?
-000038 e000                      	LDI		R16, 0x00
-000039 9300 00c1                 	STS		UCSR0B, R16
+000042 e000                      	LDI		R16, 0x00
+000043 9300 00c1                 	STS		UCSR0B, R16
                                  
                                  
                                  	//Habilitar interrupciones del Timer
-00003b e001                      	LDI		R16,	(1<<TOIE0)				//Encender el enable de las interrupciones
-00003c 9300 006e                 	STS		TIMSK0, R16						//Cargarle el nuevo valor a mascara
+000045 e001                      	LDI		R16,	(1<<TOIE0)				//Encender el enable de las interrupciones
+000046 9300 006e                 	STS		TIMSK0, R16						//Cargarle el nuevo valor a mascara
                                  	
                                  	DELAY_TIMER2:
-00003e ec02                          LDI     R16, 194						//Delay de 2 ms 
-00003f 9300 00b2                     STS     TCNT2, R16						//Cargar el valor inicial
-000041 e003                          LDI     R16, (1 << CS21) | (1 << CS20)	//Prescaler de 32
-000042 9300 00b1                     STS     TCCR2B, R16
+000048 ec02                          LDI     R16, 194						//Delay de 2 ms 
+000049 9300 00b2                     STS     TCNT2, R16						//Cargar el valor inicial
+00004b e003                          LDI     R16, (1 << CS21) | (1 << CS20)	//Prescaler de 32
+00004c 9300 00b1                     STS     TCCR2B, R16
                                  
                                  	//Valor inicial de variables generales
-000044 e020                      	LDI		DISPLAY, 0x00
-000045 e030                      	LDI		CONTADOR, 0x00
-000046 e060                      	LDI		FLAG_INC, 0x00
-000047 e000                      	LDI		R16, 0x00
-000048 e040                      	LDI		UNI_DISP, 0x00
-                                 
+00004e e020                      	LDI		DISPLAY, 0x00
+00004f e030                      	LDI		CONTADOR, 0x00
+000050 e060                      	LDI		FLAG_INC, 0x00
+000051 e000                      	LDI		R16, 0x00
+000052 e040                      	LDI		UNI_DISP, 0x00
+000053 e010                      	LDI		LEDS, 0x00
+000054 e070                      	LDI		BOTON, 0x00
                                  
                                  	//Usar el puntero Z como salida de display de unidades
-000049 e0f1                      	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro ZH
-00004a e0e6                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la direcci?n de la tabla en el registro ZL
-00004b 9124                      	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
-00004c b92b                      	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+000055 e0f1                      	LDI		ZH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro ZH
+000056 e4e4                      	LDI		ZL, LOW(TABLA<<1)				//Carga la parte baja de la direcci?n de la tabla en el registro ZL
+000057 9124                      	LPM		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
+000058 b92b                      	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
                                  
                                  	//Usar el puntero X para las decenas
-00004d e0b1                      	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro xH
-00004e e0a6                      	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la direcci?n de la tabla en el registro xL
+000059 e0b1                      	LDI		XH, HIGH(TABLA<<1)				//Carga la parte alta de la direcci?n de tabla en el registro xH
+00005a e4a4                      	LDI		XL, LOW(TABLA<<1)				//Carga la parte baja de la direcci?n de la tabla en el registro xL
                                  
-00004f 9478                      	SEI										//Habilitar las interrupciones globales.
+00005b 9478                      	SEI										//Habilitar las interrupciones globales.
                                  
                                  MAIN:
                                  	//Incrementar el contador de unidades.
-000050 3061                      	CPI		FLAG_INC, 0x01					//Revisar si paso un segundo
-000051 f079                      	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
+00005c 3061                      	CPI		FLAG_INC, 0x01					//Revisar si paso un segundo
+00005d f079                      	BREQ	INCREMENT						//Paso un segundo, incrementar unidades
                                  
                                  	//cargar unidades
-000052 8120                      	LD		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
-000053 b92b                      	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
+00005e 8120                      	LD		DISPLAY, Z						//Carga en R18 el valor de la tabla en ela dirreci?n Z
+00005f b92b                      	OUT		PORTD, DISPLAY					//Muestra en el puerto D el valor leido de la tabla
                                  
                                  	//MULTIPLEXEAR
-000054 9a43                      	SBI		PORTC, 3
-000055 9842                      	CBI		PORTC, 2
-000056 940e 007b                 	CALL	DELAY
+000060 9a43                      	SBI		PORTC, 3
+000061 9842                      	CBI		PORTC, 2
+000062 940e 0087                 	CALL	DELAY
                                  
                                  	//Cargar al puerto D las decenas
-000058 912c                      	LD		DISPLAY, X
-000059 b92b                      	OUT		PORTD, DISPLAY
+000064 912c                      	LD		DISPLAY, X
+000065 b92b                      	OUT		PORTD, DISPLAY
                                  	
                                  	//apagar los display 
-00005a 9842                      	CBI		PORTC, 2
-00005b 9843                      	CBI		PORTC, 3			
+000066 9842                      	CBI		PORTC, 2
+000067 9843                      	CBI		PORTC, 3			
                                  
                                  	//MULTIPLEXEAR para decenas
-00005c 9a42                      	SBI		PORTC, 2
-00005d 9843                      	CBI		PORTC, 3
-00005e 940e 007b                 	CALL	DELAY
-000060 cfef                      	RJMP	MAIN
+000068 9a42                      	SBI		PORTC, 2
+000069 9843                      	CBI		PORTC, 3
+00006a 940e 0087                 	CALL	DELAY
+00006c cfef                      	RJMP	MAIN
                                  
                                  //*****Subrutinas globales******
                                  INCREMENT:
-000061 e060                      	LDI		FLAG_INC, 0x00						//Clear the flag
-000062 9543                      	INC		UNI_DISP							//Incrementar el contador de unidades
-000063 304a                      	CPI		UNI_DISP, 10						//Comparar si hubo overflow
-000064 f011                      	BREQ	OVERF_UNI							//Desbordamiento de unidades
-000065 9631                      	ADIW	Z, 1								//Desplazarse una posici?n en la tabla
-000066 cfe9                      	RJMP	MAIN
+00006d e060                      	LDI		FLAG_INC, 0x00						//Clear the flag
+00006e 9543                      	INC		UNI_DISP							//Incrementar el contador de unidades
+00006f 304a                      	CPI		UNI_DISP, 10						//Comparar si hubo overflow
+000070 f011                      	BREQ	OVERF_UNI							//Desbordamiento de unidades
+000071 9631                      	ADIW	Z, 1								//Desplazarse una posici?n en la tabla
+000072 cfe9                      	RJMP	MAIN
                                  
                                  OVERF_UNI:	
-000067 e040                      	LDI		UNI_DISP, 0x00						//Reiniciar el contador de unidades
+000073 e040                      	LDI		UNI_DISP, 0x00						//Reiniciar el contador de unidades
                                  	//Reiniciar el puntero Z
-000068 e0f1                      	LDI		ZH, HIGH(TABLA<<1)				
-000069 e0e6                      	LDI		ZL, LOW(TABLA<<1)
+000074 e0f1                      	LDI		ZH, HIGH(TABLA<<1)				
+000075 e4e4                      	LDI		ZL, LOW(TABLA<<1)
                                  	//Aumentar decenas
-00006a 9553                      	INC		DEC_DISP
-00006b 3056                      	CPI		DEC_DISP, 6							//Comparar con 6	
-00006c f011                      	BREQ	OVERF_DEC							//Desbordamiento de decenas	
-00006d 9611                      	ADIW	X, 1								//Mover el puntero de decenas
-00006e cfe1                      	RJMP	MAIN			
+000076 9553                      	INC		DEC_DISP
+000077 3056                      	CPI		DEC_DISP, 6							//Comparar con 6	
+000078 f011                      	BREQ	OVERF_DEC							//Desbordamiento de decenas	
+000079 9611                      	ADIW	X, 1								//Mover el puntero de decenas
+00007a cfe1                      	RJMP	MAIN			
                                  
                                  OVERF_DEC:
-00006f e050                      	LDI		DEC_DISP, 0x00						//Reiniciar el contado de decenas
-000070 e0b1                      	LDI		XH, HIGH(TABLA<<1)					//Carga la direccion inical parte alta
-000071 e0a6                      	LDI		XL, LOW(TABLA<<1)					//Carga la direccion inicial parte baja
-000072 cfdd                      	RJMP	MAIN
+00007b e050                      	LDI		DEC_DISP, 0x00						//Reiniciar el contado de decenas
+00007c e0b1                      	LDI		XH, HIGH(TABLA<<1)					//Carga la direccion inical parte alta
+00007d e4a4                      	LDI		XL, LOW(TABLA<<1)					//Carga la direccion inicial parte baja
+00007e cfdd                      	RJMP	MAIN
                                  	 
                                  
                                  //*****Subrutinas globales******
@@ -1192,15 +1209,15 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  //*******Rutina de interrupci?n TIMER********
                                  ISR_TIMER0:
                                  	//Recargar el valor inicial del TCNT0
-000073 e604                      	LDI		R16, 100						//Se carga este valor para interrumpir cada 10 ms
-000074 bd06                      	OUT		TCNT0, R16						// Cargar valor inicial en TCNT0
-000075 9533                      	INC		CONTADOR
-000076 3634                      	CPI		CONTADOR, 100					//Cada interrupci?n ocurre 10 ms*100=1000ms
-000077 f411                      	BRNE	FIN0
-000078 e030                      	LDI		CONTADOR, 0x00					//R19
-000079 e061                      	LDI		FLAG_INC, 0x01				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
+00007f e604                      	LDI		R16, 100						//Se carga este valor para interrumpir cada 10 ms
+000080 bd06                      	OUT		TCNT0, R16						// Cargar valor inicial en TCNT0
+000081 9533                      	INC		CONTADOR
+000082 3634                      	CPI		CONTADOR, 100					//Cada interrupci?n ocurre 10 ms*100=1000ms
+000083 f411                      	BRNE	FIN0
+000084 e030                      	LDI		CONTADOR, 0x00					//R19
+000085 e061                      	LDI		FLAG_INC, 0x01				//ALTERNA EL VALOR DE LA BANDERA CADA SEGUNDO
                                  FIN0:
-00007a 9518                      	RETI
+000086 9518                      	RETI
                                  //*******Rutina de interrupci?n TIMER********
                                  
                                  
@@ -1208,26 +1225,60 @@ C:\Users\user\Documents\GitHub\Laboratorio_III\Post-Laboratorio_III\Post-Laborat
                                  //*******SubrutinaS - no interupcciones********
                                  //Delay con el timer2
                                  DELAY:
-00007b b307                      	IN		R16, TIFR2
-00007c ff00                      	SBRS	R16, TOV2						//Hasta que la bandera de overflow se active
-00007d cffd                          RJMP    DELAY							//Se va a repetir el ciclo
-00007e 9ab8                          SBI		TIFR2, TOV2						//Limpiar la bandera
-00007f ec02                      	LDI     R16, 194
-000080 9300 00b2                     STS     TCNT2, R16						//Cargar el valor inicial 
-000082 9508                          RET
+000087 b307                      	IN		R16, TIFR2
+000088 ff00                      	SBRS	R16, TOV2						//Hasta que la bandera de overflow se active
+000089 cffd                          RJMP    DELAY							//Se va a repetir el ciclo
+00008a 9ab8                          SBI		TIFR2, TOV2						//Limpiar la bandera
+00008b ec02                      	LDI     R16, 194
+00008c 9300 00b2                     STS     TCNT2, R16						//Cargar el valor inicial 
+00008e 9508                          RET
                                  //*******SubrutinaS - no interupcciones********
                                  
+                                 //********Subrutinas interrupciones pin change*******
                                  
+                                 //Subrutinas para interrupciones de botones
+                                 SUMA:
+00008f 9513                      	INC		LEDS								//Incrementa contador
+000090 3110                      	CPI		LEDS, 0x10						//Comparar con 16
+000091 f029                      	BREQ	OVERF1
+                                 	
+000092 c00d                      	RJMP	FIN1
+                                 RESTA:
+000093 3010                      	CPI		LEDS, 0x00						//Compara el contador			
+000094 f021                      	BREQ	UNDERF1							
+000095 951a                      	DEC		LEDS								//Decrementa el contador
+000096 c009                      	RJMP	FIN1
+                                 
+                                 OVERF1:
+000097 e010                      	LDI		LEDS, 0x00						//Reiniciar el contador a 0
+000098 c007                      	RJMP	FIN1
+                                 UNDERF1:
+000099 e01f                      	LDI		LEDS, 0x0F						//Reiniciar el contador a 15
+00009a c005                      	RJMP	FIN1
+                                 
+                                 
+                                 //Subrutinas de interrupciön
+                                 ISR_PCINT1:
+00009b b176                      	IN		BOTON, PINC							//Leer el estado de los botones
+00009c ff70                      	SBRS	BOTON, 0							//Salta si el bit 0 esta en set
+00009d cff1                      	RJMP	SUMA
+00009e ff71                      	SBRS	BOTON, 1							//Salta si el bit 1 esta en set
+00009f cff3                      	RJMP	RESTA
+                                 FIN1:
+0000a0 b915                      	OUT		PORTB, LEDS							//Actualiza la salida,
+0000a1 9518                      	RETI
+                                 
+                                 //********Subrutinas interrupciones pin change*******0
                                  
                                  // Tabla de conversi?n hexadecimal a 7 segmentos
                                  TABLA:
-000083 5077
-000084 7a3b
-000085 6e5c
-000086 706f
-000087 7e7f
-000088 4f7d
-000089 5b27
+0000a2 5077
+0000a3 7a3b
+0000a4 6e5c
+0000a5 706f
+0000a6 7e7f
+0000a7 4f7d
+0000a8 5b27
 
 
 RESOURCE USE INFORMATION
@@ -1247,37 +1298,37 @@ counted separately from r26..r31 here.
 "ATmega328P" register use summary:
 x  :   2 y  :   0 z  :   3 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  35 r17:   0 r18:   7 r19:   4 r20:   4 
-r21:   3 r22:   4 r23:   0 r24:   0 r25:   0 r26:   2 r27:   2 r28:   0 
+r13:   0 r14:   0 r15:   0 r16:  43 r17:   8 r18:   7 r19:   4 r20:   4 
+r21:   3 r22:   4 r23:   4 r24:   0 r25:   0 r26:   2 r27:   2 r28:   0 
 r29:   0 r30:   2 r31:   2 
-Registers used: 12 out of 35 (34.3%)
+Registers used: 14 out of 35 (40.0%)
 
 "ATmega328P" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   2 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   3 brge  :   0 brhc  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   5 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :   1 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 call  :   2 cbi   :   4 cbr   :   0 
 clc   :   0 clh   :   0 cli   :   1 cln   :   0 clr   :   0 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   4 cpse  :   0 dec   :   0 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   1 inc   :   3 jmp   :   0 
-ld    :   2 ldd   :   0 ldi   :  34 lds   :   0 lpm   :   2 lsl   :   0 
+cpi   :   6 cpse  :   0 dec   :   1 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   2 inc   :   4 jmp   :   0 
+ld    :   2 ldd   :   0 ldi   :  42 lds   :   0 lpm   :   2 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  12 pop   :   0 
-push  :   0 rcall :   0 ret   :   1 reti  :   1 rjmp  :   7 rol   :   0 
+neg   :   0 nop   :   0 or    :   0 ori   :   0 out   :  15 pop   :   0 
+push  :   0 rcall :   0 ret   :   1 reti  :   2 rjmp  :  14 rol   :   0 
 ror   :   0 sbc   :   0 sbci  :   0 sbi   :   3 sbic  :   0 sbis  :   0 
-sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   1 sec   :   0 seh   :   0 
+sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   3 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   7 
+sez   :   0 sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   9 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 20 out of 113 (17.7%)
+Instructions used: 21 out of 113 (18.6%)
 
 "ATmega328P" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000116    200     16    216   32768   0.7%
+[.cseg] 0x000000 0x000154    264     16    280   32768   0.9%
 [.dseg] 0x000100 0x000100      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
